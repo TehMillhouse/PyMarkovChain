@@ -22,7 +22,8 @@ class MarkovChain(object):
         self.db = {"":{"":0.0}}
         for line in textSample:
             words = line.split()  # split words in line
-            # treat special cases
+            if len(words) == 0:
+                continue
             # first word follows a sentence end
             if words[0] in self.db[""]:
                 self.db[""][words[0]] += 1
