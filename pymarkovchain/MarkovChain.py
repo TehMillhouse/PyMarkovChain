@@ -35,6 +35,8 @@ class MarkovChain(object):
                     # increment parametrized wordcounts
                     if words[i+1] in self.db[words[i]]:
                         self.db[words[i]][words[i+1]] += 1
+                    else:
+                        self.db[words[i]][words[i+1]] = 1.0
                 else:
                     # word has been found for the first time
                     self.db[words[i]] = {words[i+1] : 1.0}
