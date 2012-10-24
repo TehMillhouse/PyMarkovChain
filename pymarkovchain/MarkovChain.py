@@ -75,10 +75,12 @@ class MarkovChain(object):
     def generateStringWithSeed(self, seed):
         """ Generate a "sentence" with the database and a given word """
         words = seed.split()
-        if seed != "" and words[len(words) - 1] in self.db:
-            sen = words[0]
-            for i in range(1, len(words) - 2):
-                sen = sen + " " + words[i]
+        if len(words) > 0 and words[len(words) - 1] in self.db:
+            sen = ""
+            if len(words) > 1:
+                sen = words[0]
+                for i in range(1, len(words) - 1):
+                    sen = sen + " " + words[i]
             return self._accumulateWithSeed(sen, words[len(words) - 1])
         # Just pretend we've managed to generate a sentence.
         sep = " "

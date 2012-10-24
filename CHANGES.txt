@@ -2,3 +2,4 @@ v0.1 -- Initial release.
 v1.0 -- No known bugs.
 v1.1 -- Support giving a seed to markov chain.
 v1.2 -- Fix giving a seed
+v1.3 -- Further improvements to generation with seed
