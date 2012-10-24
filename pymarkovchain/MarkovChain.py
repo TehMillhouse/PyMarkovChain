@@ -72,6 +72,16 @@ class MarkovChain(object):
         """ Generate a "sentence" with the database of known text """
         return self._accumulateWithSeed("", "")
 
+    def generateStringWithSeed(self, seed):
+        """ Generate a "sentence" with the database and a given word """
+        if seed in self.db:
+            return self._accumulateWithSeed("", seed)
+        # Just pretend we've managed to generate a sentence.
+        sep = " "
+        if seed == "":
+            sep = ""
+        return seed + sep + self.generateString()
+
     def _accumulateWithSeed(self, sentence, lastWord):
         """ Accumulate the generated sentence """
         nextWord = self._nextWord(lastWord)
