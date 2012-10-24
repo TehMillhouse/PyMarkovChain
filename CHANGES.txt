@@ -4,3 +4,4 @@ v1.1 -- Support giving a seed to markov chain.
 v1.2 -- Fix giving a seed
 v1.3 -- Further improvements to generation with seed
 v1.4 -- Don't write to stderr on trivial messages
+v1.5 -- Make db loading use the .py file's directory
