@@ -63,7 +63,7 @@ class MarkovChain(object):
                     self.db[word][nextword] /= wordsum
         # Now we dump the db to disk
         try:
-            with open(os.path.join(os.path.dirname(__file__), self.dbFilePath), 'wb') as dbfile:
+            with open(self.dbFilePath, 'wb') as dbfile:
                 pickle.dump(self.db, dbfile)
             # It looks like db was written successfully
             return True
