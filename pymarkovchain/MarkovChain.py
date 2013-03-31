@@ -10,7 +10,7 @@ class MarkovChain(object):
         try:
             with open(os.path.join(os.path.dirname(__file__), dbFilePath), 'rb') as dbfile:
                 self.db = pickle.load(dbfile)
-        except IOError as e:
+        except IOError:
             print('Database file not found, using empty database\n')
             self.db = {}
 
@@ -65,7 +65,7 @@ class MarkovChain(object):
                 pickle.dump(self.db, dbfile)
             # It looks like db was written successfully
             return True
-        except IOError as e:
+        except IOError:
             sys.stderr.write('Database file could not be written')
             return False
 
