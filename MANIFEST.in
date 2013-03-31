@@ -1,4 +1,3 @@
 include *.txt
 include README.md
-include pymarkovchain/markovdb
 recursive-include docs *.txt

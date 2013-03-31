@@ -2,7 +2,26 @@ import pickle
 import sys
 import random
 import os
+import re
 
+
+def wordIter(text, separator='.'):
+    """
+    An iterator over the 'words' in the given text, as defined by
+    the regular expression given as separator.
+    """
+    exp = re.compile(separator)
+    pos = 0
+    for occ in exp.finditer(text):
+        sub = text[pos:occ.start()].strip()
+        if sub:
+            yield sub
+        pos = occ.start() + 1
+    if pos < len(text):
+        # take case of the last part
+        sub = text[pos:].strip()
+        if sub:
+            yield sub
 
 class MarkovChain(object):
     def __init__(self, dbFilePath=None):
@@ -16,15 +35,15 @@ class MarkovChain(object):
             print('Database file not found, using empty database\n')
             self.db = {}
 
-    def generateDatabase(self, textSample):
+    def generateDatabase(self, textSample, sentenceSep='[.!?\n]'):
         """ Generate word probability database from raw content string """
         # I'm using the database to temporarily store word counts
-        textSample = textSample.split('\n')  # split lines
-        # We're using "" as special symbol standing for the beginning
+        textSample = wordIter(textSample, sentenceSep)  # get an iterator for the 'sentences'
+        # We're using '' as special symbol for the beginning
         # of a sentence
         self.db = {"": {"": 0.0}}
         for line in textSample:
-            words = line.split()  # split words in line
+            words = line.strip().split()  # split words in line
             if len(words) == 0:
                 continue
             # first word follows a sentence end
@@ -62,6 +81,9 @@ class MarkovChain(object):
                 for nextword in self.db[word]:
                     self.db[word][nextword] /= wordsum
         # Now we dump the db to disk
+        return self.dumpdb()
+
+    def dumpdb(self):
         try:
             with open(self.dbFilePath, 'wb') as dbfile:
                 pickle.dump(self.db, dbfile)
@@ -77,6 +99,9 @@ class MarkovChain(object):
 
     def generateStringWithSeed(self, seed):
         """ Generate a "sentence" with the database and a given word """
+        # using str.split here means we're contructing the list in memory
+        # but as the generated sentence only depends on the last word of the seed
+        # I'm assuming seeds tend to be rather short.
         words = seed.split()
         if len(words) > 0 and words[len(words) - 1] in self.db:
             sen = ""
@@ -86,15 +111,15 @@ class MarkovChain(object):
                     sen = sen + " " + words[i]
             return sen + self._accumulateWithSeed(words[len(words) - 1])
         # Just pretend we've managed to generate a sentence.
-        sep = " "
-        if seed == "":
-            sep = ""
+        sep = ' '
+        if seed == '':
+            sep = ''
         return seed + sep + self.generateString()
 
     def _accumulateWithSeed(self, seed):
         """ Accumulate the generated sentence with a given single word as a seed """
         nextWord = self._nextWord(seed)
-        sentence = [seed]
+        sentence = [seed] if seed else []
         while nextWord:
             sentence.append(nextWord)
             nextWord = self._nextWord(nextWord)

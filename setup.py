@@ -2,7 +2,7 @@ from distutils.core import setup
 
 setup(
     name='PyMarkovChain',
-    version='1.6.3',
+    version='1.7',
     author='Max Wagner',
     author_email='max@trollbu.de',
     packages=['pymarkovchain',],
