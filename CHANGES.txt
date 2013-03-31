@@ -8,3 +8,4 @@ v1.5   -- Make db loading use the .py file's directory
 v1.5.1 -- Remove sample database filled with nonsense
 v1.5.2 -- Small cosmetic changes. Also include empty db again, because it turns out to be necessary
 v1.6   -- Allow for database to be stored anywhere
+v1.6.1 -- Forgot to include README.md into the package. Sorry!
