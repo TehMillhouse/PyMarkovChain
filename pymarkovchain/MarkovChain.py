@@ -73,7 +73,7 @@ class MarkovChain(object):
 
     def generateString(self):
         """ Generate a "sentence" with the database of known text """
-        return self._accumulateWithSeed("", "")
+        return self._accumulateWithSeed('')
 
     def generateStringWithSeed(self, seed):
         """ Generate a "sentence" with the database and a given word """
@@ -84,23 +84,21 @@ class MarkovChain(object):
                 sen = words[0]
                 for i in range(1, len(words) - 1):
                     sen = sen + " " + words[i]
-            return self._accumulateWithSeed(sen, words[len(words) - 1])
+            return sen + self._accumulateWithSeed(words[len(words) - 1])
         # Just pretend we've managed to generate a sentence.
         sep = " "
         if seed == "":
             sep = ""
         return seed + sep + self.generateString()
 
-    def _accumulateWithSeed(self, sentence, lastWord):
-        """ Accumulate the generated sentence """
-        nextWord = self._nextWord(lastWord)
-        if sentence == "":
-            sep = ""
-        else:
-            sep = " "
-        if nextWord == "":
-            return sentence + sep + lastWord
-        return self._accumulateWithSeed(sentence + sep + lastWord, nextWord)
+    def _accumulateWithSeed(self, seed):
+        """ Accumulate the generated sentence with a given single word as a seed """
+        nextWord = self._nextWord(seed)
+        sentence = [seed]
+        while nextWord:
+            sentence.append(nextWord)
+            nextWord = self._nextWord(nextWord)
+        return ' '.join(sentence)
 
     def _nextWord(self, lastword):
         probmap = self.db[lastword]
