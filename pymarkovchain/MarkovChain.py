@@ -104,11 +104,12 @@ class MarkovChain(object):
         # I'm assuming seeds tend to be rather short.
         words = seed.split()
         if len(words) > 0 and words[len(words) - 1] in self.db:
-            sen = ""
+            sen = ''
             if len(words) > 1:
                 sen = words[0]
-                for i in range(1, len(words)):
-                    sen = sen + " " + words[i]
+                for i in range(1, len(words) - 1):
+                    sen = sen + ' ' + words[i]
+                sen = sen + ' '
             return sen + self._accumulateWithSeed(words[len(words) - 1])
         # Just pretend we've managed to generate a sentence.
         sep = ' '
