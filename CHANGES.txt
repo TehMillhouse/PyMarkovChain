@@ -12,3 +12,4 @@ v1.6.1 -- Forgot to include README.md into the package. Sorry!
 v1.6.2 -- Make sure we're not saving the db to 'None'
 v1.6.3 -- Actually dump db where we expect it
 v1.7   -- Improve efficiency and sentence detection by leaps
+v1.7.1 -- Fix a bug where whitespace would go missing when completing sentences

@@ -107,7 +107,7 @@ class MarkovChain(object):
             sen = ""
             if len(words) > 1:
                 sen = words[0]
-                for i in range(1, len(words) - 1):
+                for i in range(1, len(words)):
                     sen = sen + " " + words[i]
             return sen + self._accumulateWithSeed(words[len(words) - 1])
         # Just pretend we've managed to generate a sentence.
