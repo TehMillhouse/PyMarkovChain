@@ -37,7 +37,10 @@ class MarkovChain(object):
             with open(self.dbFilePath, 'rb') as dbfile:
                 self.db = pickle.load(dbfile)
         except IOError:
-            print('Database file not found, using empty database\n')
+            print('Database file not found, using empty database')
+            self.db = {}
+        except ValueError:
+            print('Database corrupt or unreadable, using empty database')
             self.db = {}
 
     def generateDatabase(self, textSample, sentenceSep='[.!?\n]'):
