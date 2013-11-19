@@ -1,4 +1,9 @@
-import pickle
+
+# use cPickle when using python2 for better performance
+try:
+    import cPickle as pickle
+except ImportError:
+    import pickle
 import sys
 import random
 import os
