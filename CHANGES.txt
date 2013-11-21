@@ -16,3 +16,4 @@ v1.7.1 -- Fix a bug where whitespace would go missing when completing sentences
 v1.7.2 -- Fix a bug introduced with the last release
 v1.7.3 -- Improved performance on py2 and fixed db compatibility bug
 v1.7.4 -- Quickfix for rounding errors on py2
+v1.7.5 -- Quickfix for the quickfix (from __future__ has to be at the top)

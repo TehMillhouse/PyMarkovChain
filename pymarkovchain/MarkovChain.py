@@ -1,10 +1,9 @@
-
+from __future__ import division
 # use cPickle when using python2 for better performance
 try:
     import cPickle as pickle
 except ImportError:
     import pickle
-from __future__ import division
 import sys
 import random
 import os
