@@ -10,6 +10,10 @@ import random
 import re
 
 
+class StringContinuationImpossibleError(Exception):
+    pass
+
+
 def wordIter(text, separator='.'):
     """
     An iterator over the 'words' in the given text, as defined by
@@ -119,11 +123,7 @@ class MarkovChain(object):
                     sen = sen + ' ' + words[i]
                 sen = sen + ' '
             return sen + self._accumulateWithSeed(words[len(words) - 1])
-        # Just pretend we've managed to generate a sentence.
-        sep = ' '
-        if seed == '':
-            sep = ''
-        return seed + sep + self.generateString()
+        raise StringContinuationImpossibleError()
 
     def _accumulateWithSeed(self, seed):
         """ Accumulate the generated sentence with a given single word as a seed """
