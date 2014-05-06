@@ -4,9 +4,9 @@ try:
     import cPickle as pickle
 except ImportError:
     import pickle
-import sys
-import random
+import logging
 import os
+import random
 import re
 
 
@@ -98,7 +98,7 @@ class MarkovChain(object):
             # It looks like db was written successfully
             return True
         except IOError:
-            sys.stderr.write('Database file could not be written')
+            logging.WARN('Database file could not be written')
             return False
 
     def generateString(self):
