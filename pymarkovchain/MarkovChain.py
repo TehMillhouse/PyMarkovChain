@@ -67,13 +67,13 @@ class MarkovChain(object):
         textSample = wordIter(textSample, sentenceSep)  # get an iterator for the 'sentences'
         # We're using '' as special symbol for the beginning
         # of a sentence
-        self.db[''][''] = 0.0
+        self.db[('',)][''] = 0.0
         for line in textSample:
             words = line.strip().split()  # split words in line
             if len(words) == 0:
                 continue
             # first word follows a sentence end
-            self.db[""][words[0]] += 1
+            self.db[("",)][words[0]] += 1
 
             for order in range(1, n+1):
                 for i in range(len(words) - 1):
