@@ -11,7 +11,11 @@ import re
 from collections import defaultdict
 
 class StringContinuationImpossibleError(Exception):
-    pass
+    def __init__(self, seed=''):
+        self.seed = seed
+
+    def __str__(self):
+        return repr(self.seed)
 
 # {words: {word: prob}}
 db_factory = lambda: defaultdict(lambda: defaultdict(lambda: 1.0, {}))
@@ -113,7 +117,7 @@ class MarkovChain(object):
                     sen = sen + ' ' + words[i]
                 sen = sen + ' '
             return sen + self._accumulateWithSeed(words[len(words) - 1])
-        raise StringContinuationImpossibleError()
+        raise StringContinuationImpossibleError(seed)
 
     def _accumulateWithSeed(self, seed):
         """ Accumulate the generated sentence with a given single word as a seed """
