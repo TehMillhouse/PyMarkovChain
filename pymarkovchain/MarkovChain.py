@@ -4,10 +4,14 @@ try:
     import cPickle as pickle
 except ImportError:
     import pickle
-import sys
-import random
+import logging
 import os
+import random
 import re
+
+
+class StringContinuationImpossibleError(Exception):
+    pass
 
 
 def wordIter(text, separator='.'):
@@ -104,7 +108,7 @@ class MarkovChain(object):
             # It looks like db was written successfully
             return True
         except IOError:
-            sys.stderr.write('Database file could not be written')
+            logging.WARN('Database file could not be written')
             return False
 
     def generateString(self):
@@ -125,11 +129,7 @@ class MarkovChain(object):
                     sen = sen + ' ' + words[i]
                 sen = sen + ' '
             return sen + self._accumulateWithSeed(words[len(words) - 1])
-        # Just pretend we've managed to generate a sentence.
-        sep = ' '
-        if seed == '':
-            sep = ''
-        return seed + sep + self.generateString()
+        raise StringContinuationImpossibleError()
 
     def _accumulateWithSeed(self, seed):
         """ Accumulate the generated sentence with a given single word as a seed """
