@@ -8,11 +8,13 @@ import logging
 import os
 import random
 import re
-
+from collections import defaultdict
 
 class StringContinuationImpossibleError(Exception):
     pass
 
+# {words: {word: prob}}
+db_factory = lambda: defaultdict(lambda: defaultdict(lambda: 1.0, {}))
 
 def wordIter(text, separator='.'):
     """
@@ -39,13 +41,13 @@ class MarkovChain(object):
             self.dbFilePath = os.path.join(os.path.dirname(__file__), "markovdb")
         try:
             with open(self.dbFilePath, 'rb') as dbfile:
-                self.db = pickle.load(dbfile)
+                self.db = db_factory()
         except IOError:
             print('Database file not found, using empty database')
-            self.db = {}
+            self.db = db_factory()
         except ValueError:
             print('Database corrupt or unreadable, using empty database')
-            self.db = {}
+            self.db = db_factory()
 
     def generateDatabase(self, textSample, sentenceSep='[.!?\n]', n=2):
         """ Generate word probability database from raw content string """
@@ -53,41 +55,23 @@ class MarkovChain(object):
         textSample = wordIter(textSample, sentenceSep)  # get an iterator for the 'sentences'
         # We're using '' as special symbol for the beginning
         # of a sentence
-        self.db = {"": {"": 0.0}}
+        self.db[''][''] = 0.0
         for line in textSample:
             words = line.strip().split()  # split words in line
             if len(words) == 0:
                 continue
             # first word follows a sentence end
-            if words[0] in self.db[""]:
-                self.db[""][words[0]] += 1
-            else:
-                self.db[""][words[0]] = 1.0
+            self.db[""][words[0]] += 1
+
             for order in range(1, n+1):
                 for i in range(len(words) - 1):
                     if i + order >= len(words):
                         continue
                     word = tuple(words[i:i + order])
-                    if word in self.db:
-                        # the current word has been found at least once
-                        # increment parametrized wordcounts
-                        if words[i + order] in self.db[word]:
-                            self.db[word][words[i + order]] += 1
-                        else:
-                            self.db[word][words[i + order]] = 1.0
-                    else:
-                        # word has been found for the first time
-                        self.db[words] = {words[i + order]: 1.0}
+                    self.db[word][words[i + order]] += 1
 
                 # last word precedes a sentence end
-                t = tuple(words[len(words) - order:len(words)])
-                if t in self.db:
-                    if "" in self.db[t]:
-                        self.db[t][""] += 1
-                    else:
-                        self.db[t][""] = 1.0
-                else:
-                    self.db[t] = {"": 1.0}
+                self.db[tuple(words[len(words) - order:len(words)])][""] += 1
 
         # We've now got the db filled with parametrized word counts
         # We still need to normalize this to represent probabilities
