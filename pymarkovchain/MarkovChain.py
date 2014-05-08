@@ -43,7 +43,7 @@ class MarkovChain(object):
             print('Database corrupt or unreadable, using empty database')
             self.db = {}
 
-    def generateDatabase(self, textSample, sentenceSep='[.!?\n]'):
+    def generateDatabase(self, textSample, sentenceSep='[.!?\n]', n=2):
         """ Generate word probability database from raw content string """
         # I'm using the database to temporarily store word counts
         textSample = wordIter(textSample, sentenceSep)  # get an iterator for the 'sentences'
@@ -59,25 +59,31 @@ class MarkovChain(object):
                 self.db[""][words[0]] += 1
             else:
                 self.db[""][words[0]] = 1.0
-            for i in range(len(words) - 1):
-                if words[i] in self.db:
-                    # the current word has been found at least once
-                    # increment parametrized wordcounts
-                    if words[i + 1] in self.db[words[i]]:
-                        self.db[words[i]][words[i + 1]] += 1
+            for order in range(1, n+1):
+                for i in range(len(words) - 1):
+                    if i + order >= len(words):
+                        continue
+                    word = tuple(words[i:i + order])
+                    if word in self.db:
+                        # the current word has been found at least once
+                        # increment parametrized wordcounts
+                        if words[i + order] in self.db[word]:
+                            self.db[word][words[i + order]] += 1
+                        else:
+                            self.db[word][words[i + order]] = 1.0
                     else:
-                        self.db[words[i]][words[i + 1]] = 1.0
+                        # word has been found for the first time
+                        self.db[words] = {words[i + order]: 1.0}
+
+                # last word precedes a sentence end
+                t = tuple(words[len(words) - order:len(words)])
+                if t in self.db:
+                    if "" in self.db[t]:
+                        self.db[t][""] += 1
+                    else:
+                        self.db[t][""] = 1.0
                 else:
-                    # word has been found for the first time
-                    self.db[words[i]] = {words[i + 1]: 1.0}
-            # last word precedes a sentence end
-            if words[len(words) - 1] in self.db:
-                if "" in self.db[words[len(words) - 1]]:
-                    self.db[words[len(words) - 1]][""] += 1
-                else:
-                    self.db[words[len(words) - 1]][""] = 1.0
-            else:
-                self.db[words[len(words) - 1]] = {"": 1.0}
+                    self.db[t] = {"": 1.0}
 
         # We've now got the db filled with parametrized word counts
         # We still need to normalize this to represent probabilities
