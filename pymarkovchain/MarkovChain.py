@@ -18,7 +18,15 @@ class StringContinuationImpossibleError(Exception):
         return repr(self.seed)
 
 # {words: {word: prob}}
-db_factory = lambda: defaultdict(lambda: defaultdict(lambda: 1.0, {}))
+# We have to define these as separate functions so they can be pickled.
+def db_factory():
+    return defaultdict(one_dict)
+
+def one():
+    return 1.0
+
+def one_dict():
+    return defaultdict(one)
 
 def wordIter(text, separator='.'):
     """
