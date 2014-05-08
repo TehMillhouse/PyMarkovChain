@@ -45,7 +45,7 @@ class MarkovChain(object):
             self.dbFilePath = os.path.join(os.path.dirname(__file__), "markovdb")
         try:
             with open(self.dbFilePath, 'rb') as dbfile:
-                self.db = db_factory()
+                self.db = pickle.load(dbfile)
         except IOError:
             print('Database file not found, using empty database')
             self.db = db_factory()
