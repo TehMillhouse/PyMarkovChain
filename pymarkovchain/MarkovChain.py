@@ -109,7 +109,7 @@ class MarkovChain(object):
 
     def generateString(self):
         """ Generate a "sentence" with the database of known text """
-        return self._accumulateWithSeed('')
+        return self._accumulateWithSeed(('',))
 
     def generateStringWithSeed(self, seed):
         """ Generate a "sentence" with the database and a given word """
@@ -128,16 +128,23 @@ class MarkovChain(object):
         raise StringContinuationImpossibleError(seed)
 
     def _accumulateWithSeed(self, seed):
-        """ Accumulate the generated sentence with a given single word as a seed """
+        """ Accumulate the generated sentence with a given single word as a
+        seed """
         nextWord = self._nextWord(seed)
-        sentence = [seed] if seed else []
+        sentence = list(seed) if seed else []
         while nextWord:
             sentence.append(nextWord)
-            nextWord = self._nextWord(nextWord)
-        return ' '.join(sentence)
+            nextWord = self._nextWord(sentence)
+        return ' '.join(sentence[1:])
 
-    def _nextWord(self, lastword):
-        probmap = self.db[lastword]
+    def _nextWord(self, lastwords):
+        lastwords = tuple(lastwords)
+        if lastwords != ('',):
+            while lastwords not in self.db:
+                lastwords = lastwords[1:]
+                if not lastwords:
+                    return ''
+        probmap = self.db[lastwords]
         sample = random.random()
         # since rounding errors might make us miss out on some words
         maxprob = 0.0
