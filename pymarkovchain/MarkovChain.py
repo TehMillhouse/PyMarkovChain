@@ -117,15 +117,10 @@ class MarkovChain(object):
         # but as the generated sentence only depends on the last word of the seed
         # I'm assuming seeds tend to be rather short.
         words = seed.split()
-        if len(words) > 0 and words[len(words) - 1] in self.db:
-            sen = ''
-            if len(words) > 1:
-                sen = words[0]
-                for i in range(1, len(words) - 1):
-                    sen = sen + ' ' + words[i]
-                sen = sen + ' '
-            return sen + self._accumulateWithSeed(words[len(words) - 1])
-        raise StringContinuationImpossibleError(seed)
+        if (words[-1],) not in self.db:
+            # The only possible way it won't work is if the last word is not known
+            raise StringContinuationImpossibleError(seed)
+        return self._accumulateWithSeed(words)
 
     def _accumulateWithSeed(self, seed):
         """ Accumulate the generated sentence with a given single word as a
@@ -135,7 +130,7 @@ class MarkovChain(object):
         while nextWord:
             sentence.append(nextWord)
             nextWord = self._nextWord(sentence)
-        return ' '.join(sentence[1:])
+        return ' '.join(sentence).strip()
 
     def _nextWord(self, lastwords):
         lastwords = tuple(lastwords)
