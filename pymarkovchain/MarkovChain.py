@@ -87,8 +87,6 @@ class MarkovChain(object):
             if wordsum != 0:
                 for nextword in self.db[word]:
                     self.db[word][nextword] /= wordsum
-        # Now we dump the db to disk
-        return self.dumpdb()
 
     def dumpdb(self):
         try:
