@@ -11,24 +11,20 @@ import re
 from collections import defaultdict
 
 class StringContinuationImpossibleError(Exception):
-    def __init__(self, seed=''):
-        self.seed = seed
-
-    def __str__(self):
-        return repr(self.seed)
+    pass
 
 # {words: {word: prob}}
 # We have to define these as separate functions so they can be pickled.
-def db_factory():
-    return defaultdict(one_dict)
+def _db_factory():
+    return defaultdict(_one_dict)
 
-def one():
+def _one():
     return 1.0
 
-def one_dict():
-    return defaultdict(one)
+def _one_dict():
+    return defaultdict(_one)
 
-def wordIter(text, separator='.'):
+def _wordIter(text, separator='.'):
     """
     An iterator over the 'words' in the given text, as defined by
     the regular expression given as separator.
@@ -56,12 +52,12 @@ class MarkovChain(object):
                 self.db = pickle.load(dbfile)
         except (IOError, ValueError):
             logging.warn('Database file corrupt or not found, using empty database')
-            self.db = db_factory()
+            self.db = _db_factory()
 
     def generateDatabase(self, textSample, sentenceSep='[.!?\n]', n=2):
         """ Generate word probability database from raw content string """
         # I'm using the database to temporarily store word counts
-        textSample = wordIter(textSample, sentenceSep)  # get an iterator for the 'sentences'
+        textSample = _wordIter(textSample, sentenceSep)  # get an iterator for the 'sentences'
         # We're using '' as special symbol for the beginning
         # of a sentence
         self.db[('',)][''] = 0.0
@@ -116,7 +112,8 @@ class MarkovChain(object):
         words = seed.split()
         if (words[-1],) not in self.db:
             # The only possible way it won't work is if the last word is not known
-            raise StringContinuationImpossibleError(seed)
+            raise StringContinuationImpossibleError('Could not continue string: '
+                                                    + seed)
         return self._accumulateWithSeed(words)
 
     def _accumulateWithSeed(self, seed):
