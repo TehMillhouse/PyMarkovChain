@@ -8,11 +8,25 @@ import logging
 import os
 import random
 import re
-
+from collections import defaultdict
 
 class StringContinuationImpossibleError(Exception):
-    pass
+    def __init__(self, seed=''):
+        self.seed = seed
 
+    def __str__(self):
+        return repr(self.seed)
+
+# {words: {word: prob}}
+# We have to define these as separate functions so they can be pickled.
+def db_factory():
+    return defaultdict(one_dict)
+
+def one():
+    return 1.0
+
+def one_dict():
+    return defaultdict(one)
 
 def wordIter(text, separator='.'):
     """
@@ -42,46 +56,34 @@ class MarkovChain(object):
                 self.db = pickle.load(dbfile)
         except IOError:
             print('Database file not found, using empty database')
-            self.db = {}
+            self.db = db_factory()
         except ValueError:
             print('Database corrupt or unreadable, using empty database')
-            self.db = {}
+            self.db = db_factory()
 
-    def generateDatabase(self, textSample, sentenceSep='[.!?\n]'):
+    def generateDatabase(self, textSample, sentenceSep='[.!?\n]', n=2):
         """ Generate word probability database from raw content string """
         # I'm using the database to temporarily store word counts
         textSample = wordIter(textSample, sentenceSep)  # get an iterator for the 'sentences'
         # We're using '' as special symbol for the beginning
         # of a sentence
-        self.db = {"": {"": 0.0}}
+        self.db[('',)][''] = 0.0
         for line in textSample:
             words = line.strip().split()  # split words in line
             if len(words) == 0:
                 continue
             # first word follows a sentence end
-            if words[0] in self.db[""]:
-                self.db[""][words[0]] += 1
-            else:
-                self.db[""][words[0]] = 1.0
-            for i in range(len(words) - 1):
-                if words[i] in self.db:
-                    # the current word has been found at least once
-                    # increment parametrized wordcounts
-                    if words[i + 1] in self.db[words[i]]:
-                        self.db[words[i]][words[i + 1]] += 1
-                    else:
-                        self.db[words[i]][words[i + 1]] = 1.0
-                else:
-                    # word has been found for the first time
-                    self.db[words[i]] = {words[i + 1]: 1.0}
-            # last word precedes a sentence end
-            if words[len(words) - 1] in self.db:
-                if "" in self.db[words[len(words) - 1]]:
-                    self.db[words[len(words) - 1]][""] += 1
-                else:
-                    self.db[words[len(words) - 1]][""] = 1.0
-            else:
-                self.db[words[len(words) - 1]] = {"": 1.0}
+            self.db[("",)][words[0]] += 1
+
+            for order in range(1, n+1):
+                for i in range(len(words) - 1):
+                    if i + order >= len(words):
+                        continue
+                    word = tuple(words[i:i + order])
+                    self.db[word][words[i + order]] += 1
+
+                # last word precedes a sentence end
+                self.db[tuple(words[len(words) - order:len(words)])][""] += 1
 
         # We've now got the db filled with parametrized word counts
         # We still need to normalize this to represent probabilities
@@ -107,7 +109,7 @@ class MarkovChain(object):
 
     def generateString(self):
         """ Generate a "sentence" with the database of known text """
-        return self._accumulateWithSeed('')
+        return self._accumulateWithSeed(('',))
 
     def generateStringWithSeed(self, seed):
         """ Generate a "sentence" with the database and a given word """
@@ -115,27 +117,29 @@ class MarkovChain(object):
         # but as the generated sentence only depends on the last word of the seed
         # I'm assuming seeds tend to be rather short.
         words = seed.split()
-        if len(words) > 0 and words[len(words) - 1] in self.db:
-            sen = ''
-            if len(words) > 1:
-                sen = words[0]
-                for i in range(1, len(words) - 1):
-                    sen = sen + ' ' + words[i]
-                sen = sen + ' '
-            return sen + self._accumulateWithSeed(words[len(words) - 1])
-        raise StringContinuationImpossibleError()
+        if (words[-1],) not in self.db:
+            # The only possible way it won't work is if the last word is not known
+            raise StringContinuationImpossibleError(seed)
+        return self._accumulateWithSeed(words)
 
     def _accumulateWithSeed(self, seed):
-        """ Accumulate the generated sentence with a given single word as a seed """
+        """ Accumulate the generated sentence with a given single word as a
+        seed """
         nextWord = self._nextWord(seed)
-        sentence = [seed] if seed else []
+        sentence = list(seed) if seed else []
         while nextWord:
             sentence.append(nextWord)
-            nextWord = self._nextWord(nextWord)
-        return ' '.join(sentence)
+            nextWord = self._nextWord(sentence)
+        return ' '.join(sentence).strip()
 
-    def _nextWord(self, lastword):
-        probmap = self.db[lastword]
+    def _nextWord(self, lastwords):
+        lastwords = tuple(lastwords)
+        if lastwords != ('',):
+            while lastwords not in self.db:
+                lastwords = lastwords[1:]
+                if not lastwords:
+                    return ''
+        probmap = self.db[lastwords]
         sample = random.random()
         # since rounding errors might make us miss out on some words
         maxprob = 0.0
